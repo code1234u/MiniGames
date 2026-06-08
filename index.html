@@ -7,50 +7,44 @@
 <style>
 body {
     margin: 0;
-    font-family: Arial;
     background: white;
+    font-family: Arial;
     text-align: center;
 }
 
 /* Top image */
 #topImg {
-    margin-top: 15px;
-    max-width: 250px;
+    margin-top: 10px;
+    max-width: 200px;
 }
 
-/* Menu screen */
+/* MENU GRID */
 #menu {
-    margin-top: 40px;
-}
-
-.game-card {
-    width: 60%;
-    height: 200px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    width: 80%;
     margin: 30px auto;
-    background: #d9d9d9;
-    position: relative;
-    border: 3px solid #555;
+}
+
+.card {
+    background: #ccc;
+    height: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
     cursor: pointer;
-    overflow: hidden;
+    border: 2px solid #666;
 }
 
-/* fake T-Rex */
-.trex-preview {
-    position: absolute;
-    bottom: 20px;
-    left: 20px;
-    width: 40px;
-    height: 40px;
-    background: black;
-}
-
-/* GAME SCREEN */
+/* GAME */
 #game {
     display: none;
-    background: white;
     height: 100vh;
-    overflow: hidden;
+    background: white;
     position: relative;
+    overflow: hidden;
 }
 
 #ground {
@@ -61,48 +55,48 @@ body {
     background: black;
 }
 
-#trex {
+#cube {
     position: absolute;
     bottom: 4px;
-    left: 50px;
+    left: 60px;
     width: 40px;
     height: 40px;
     background: black;
 }
 
-.cactus {
+.obstacle {
     position: absolute;
     bottom: 4px;
-    width: 20px;
+    width: 25px;
     height: 40px;
-    background: green;
+    background: black;
 }
 </style>
 </head>
 
 <body>
 
+<!-- TOP IMAGE -->
+<img id="topImg" src="WebGames.png">
+
 <!-- MENU -->
 <div id="menu">
-
-    <img id="topImg" src="WebGames.png">
-
-    <div class="game-card" onclick="startGame()">
-        <div class="trex-preview"></div>
-        <p style="position:absolute; bottom:5px; width:100%;">Click to Play</p>
-    </div>
-
+    <div class="card" onclick="startGame()">Cube Jump</div>
+    <div class="card" onclick="startGame()">Cube Jump</div>
+    <div class="card" onclick="startGame()">Cube Jump</div>
+    <div class="card" onclick="startGame()">Cube Jump</div>
 </div>
 
 <!-- GAME -->
 <div id="game">
     <div id="ground"></div>
-    <div id="trex"></div>
+    <div id="cube"></div>
 </div>
 
 <script>
-let trex = document.getElementById("trex");
+let menu = document.getElementById("menu");
 let game = document.getElementById("game");
+let cube = document.getElementById("cube");
 
 let jumping = false;
 let velocity = 0;
@@ -113,10 +107,10 @@ let obstacles = [];
 let running = false;
 
 function startGame() {
-    document.getElementById("menu").style.display = "none";
+    menu.style.display = "none";
     game.style.display = "block";
     running = true;
-    spawnLoop();
+    spawn();
     update();
 }
 
@@ -133,16 +127,16 @@ document.addEventListener("keydown", (e) => {
 
 document.addEventListener("touchstart", jump);
 
-function spawnLoop() {
+function spawn() {
     if (!running) return;
 
-    let cactus = document.createElement("div");
-    cactus.classList.add("cactus");
-    cactus.style.left = "100%";
-    game.appendChild(cactus);
-    obstacles.push(cactus);
+    let obs = document.createElement("div");
+    obs.classList.add("obstacle");
+    obs.style.left = "100%";
+    game.appendChild(obs);
+    obstacles.push(obs);
 
-    setTimeout(spawnLoop, 2000);
+    setTimeout(spawn, 1500);
 }
 
 function update() {
@@ -157,23 +151,22 @@ function update() {
         jumping = false;
     }
 
-    trex.style.bottom = (4 + y) + "px";
+    cube.style.bottom = (4 + y) + "px";
 
     // move obstacles
     for (let i = 0; i < obstacles.length; i++) {
-        let obs = obstacles[i];
-        let left = parseFloat(obs.style.left);
+        let o = obstacles[i];
+        let left = parseFloat(o.style.left);
         left -= 6;
-        obs.style.left = left + "px";
+        o.style.left = left + "px";
 
         // collision
         if (left < 90 && left > 40 && y < 30) {
-            resetGame();
+            reset();
         }
 
-        // remove off screen
         if (left < -50) {
-            obs.remove();
+            o.remove();
             obstacles.splice(i, 1);
             i--;
         }
@@ -182,16 +175,14 @@ function update() {
     requestAnimationFrame(update);
 }
 
-function resetGame() {
-    running = false;
-    alert("Game Over!");
+function reset() {
+    alert("Game Over");
 
-    // clear obstacles
     obstacles.forEach(o => o.remove());
     obstacles = [];
 
-    // reset screen
-    document.getElementById("menu").style.display = "block";
+    running = false;
+    menu.style.display = "grid";
     game.style.display = "none";
     y = 0;
 }
