@@ -1,8 +1,201 @@
 <!DOCTYPE html>
 <html>
-<body style="background:white; text-align:center;">
+<head>
+<meta charset="UTF-8">
+<title>WebGames</title>
 
-<img src="WebGames.png" alt="WebGames">
+<style>
+body {
+    margin: 0;
+    font-family: Arial;
+    background: white;
+    text-align: center;
+}
+
+/* Top image */
+#topImg {
+    margin-top: 15px;
+    max-width: 250px;
+}
+
+/* Menu screen */
+#menu {
+    margin-top: 40px;
+}
+
+.game-card {
+    width: 60%;
+    height: 200px;
+    margin: 30px auto;
+    background: #d9d9d9;
+    position: relative;
+    border: 3px solid #555;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+/* fake T-Rex */
+.trex-preview {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    width: 40px;
+    height: 40px;
+    background: black;
+}
+
+/* GAME SCREEN */
+#game {
+    display: none;
+    background: white;
+    height: 100vh;
+    overflow: hidden;
+    position: relative;
+}
+
+#ground {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 4px;
+    background: black;
+}
+
+#trex {
+    position: absolute;
+    bottom: 4px;
+    left: 50px;
+    width: 40px;
+    height: 40px;
+    background: black;
+}
+
+.cactus {
+    position: absolute;
+    bottom: 4px;
+    width: 20px;
+    height: 40px;
+    background: green;
+}
+</style>
+</head>
+
+<body>
+
+<!-- MENU -->
+<div id="menu">
+
+    <img id="topImg" src="WebGames.png">
+
+    <div class="game-card" onclick="startGame()">
+        <div class="trex-preview"></div>
+        <p style="position:absolute; bottom:5px; width:100%;">Click to Play</p>
+    </div>
+
+</div>
+
+<!-- GAME -->
+<div id="game">
+    <div id="ground"></div>
+    <div id="trex"></div>
+</div>
+
+<script>
+let trex = document.getElementById("trex");
+let game = document.getElementById("game");
+
+let jumping = false;
+let velocity = 0;
+let gravity = 0.8;
+let y = 0;
+
+let obstacles = [];
+let running = false;
+
+function startGame() {
+    document.getElementById("menu").style.display = "none";
+    game.style.display = "block";
+    running = true;
+    spawnLoop();
+    update();
+}
+
+function jump() {
+    if (!jumping) {
+        velocity = 12;
+        jumping = true;
+    }
+}
+
+document.addEventListener("keydown", (e) => {
+    if (e.code === "Space") jump();
+});
+
+document.addEventListener("touchstart", jump);
+
+function spawnLoop() {
+    if (!running) return;
+
+    let cactus = document.createElement("div");
+    cactus.classList.add("cactus");
+    cactus.style.left = "100%";
+    game.appendChild(cactus);
+    obstacles.push(cactus);
+
+    setTimeout(spawnLoop, 2000);
+}
+
+function update() {
+    if (!running) return;
+
+    // jump physics
+    y += velocity;
+    velocity -= gravity;
+
+    if (y <= 0) {
+        y = 0;
+        jumping = false;
+    }
+
+    trex.style.bottom = (4 + y) + "px";
+
+    // move obstacles
+    for (let i = 0; i < obstacles.length; i++) {
+        let obs = obstacles[i];
+        let left = parseFloat(obs.style.left);
+        left -= 6;
+        obs.style.left = left + "px";
+
+        // collision
+        if (left < 90 && left > 40 && y < 30) {
+            resetGame();
+        }
+
+        // remove off screen
+        if (left < -50) {
+            obs.remove();
+            obstacles.splice(i, 1);
+            i--;
+        }
+    }
+
+    requestAnimationFrame(update);
+}
+
+function resetGame() {
+    running = false;
+    alert("Game Over!");
+
+    // clear obstacles
+    obstacles.forEach(o => o.remove());
+    obstacles = [];
+
+    // reset screen
+    document.getElementById("menu").style.display = "block";
+    game.style.display = "none";
+    y = 0;
+}
+</script>
 
 </body>
 </html>
